@@ -1,0 +1,13 @@
+{
+  "name": "studypulse-workspace",
+  "version": "1.0.0",
+  "description": "AI-powered student workspace: Lecture PDF to Concise Revision Notes and 5-Question Quiz",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["ai", "study", "pdf-extraction", "quiz", "student-workspace"],
+  "license": "MIT"
+}

@@ -1,0 +1,92 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 7 0 R >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Length 1089 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+18 TL
+(CS 301: Distributed Systems - Lecture 8) Tj
+T* (Raft Consensus and Replicated State Machines) Tj
+T* () Tj
+T* (1. The Core Consensus Challenge) Tj
+T* (In a distributed architecture, independent servers must agree on values) Tj
+T* (despite network partitions, packet loss, message delays, and server crashes.) Tj
+T* (The fail-stop model assumes nodes fail cleanly rather than acting maliciously.) Tj
+T* () Tj
+T* (2. Replicated State Machine Architecture) Tj
+T* (Identical replica servers execute an identical sequence of deterministic) Tj
+T* (commands from a shared replicated log. If each server starts in the same) Tj
+T* (initial state, they will transition through identical intermediate states.) Tj
+T* () Tj
+T* (3. Three Decomposed Subproblems in Raft) Tj
+T* (Unlike Paxos, Raft explicitly decomposes consensus into three modules:) Tj
+T* (A. Leader Election: Choosing one node to coordinate operations.) Tj
+T* (B. Log Replication: The leader accepts writes and replicates them.) Tj
+T* (C. Safety: Committed log entries must survive all future terms.) Tj
+ET
+
+endstream
+endobj
+7 0 obj
+<< /Length 1185 >>
+stream
+BT
+/F1 12 Tf
+50 720 Td
+18 TL
+(CS 301: Lecture 8 \(Continued\)) Tj
+T* (Server Roles, Quorum Math & Leader Completeness) Tj
+T* () Tj
+T* (4. Node State Machine & Logical Clock Terms) Tj
+T* (Each node exists in one of three states: Leader, Follower, or Candidate.) Tj
+T* (Time is divided into monotonically increasing terms acting as logical clocks.) Tj
+T* (If a message arrives with a higher term, any node steps down immediately.) Tj
+T* () Tj
+T* (5. Majority Quorum and Split-Brain Prevention) Tj
+T* (A candidate must acquire strictly greater than N/2 votes to become leader.) Tj
+T* (For example, in a 5-node cluster, quorum is at least 3 nodes.) Tj
+T* (Because any two majorities must overlap by at least one node, it is) Tj
+T* (mathematically impossible for two leaders to be elected in the same term.) Tj
+T* () Tj
+T* (6. Randomized Election Timeouts \(150ms - 300ms\)) Tj
+T* (Randomizing election timeouts breaks split-vote deadlocks effectively.) Tj
+T* (Voters deny requests if the candidate's log is less up-to-date than their own.) Tj
+T* () Tj
+T* (7. Common Exam Trap: Disk Write vs Commit) Tj
+T* (A write to disk is NOT committed until replicated across a strict majority.) Tj
+ET
+
+endstream
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000253 00000 n 
+0000000379 00000 n 
+0000000449 00000 n 
+0000001590 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+2827
+%%EOF

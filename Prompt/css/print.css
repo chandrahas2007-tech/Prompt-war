@@ -1,0 +1,139 @@
+/* ==========================================================================
+   StudyPulse: AI Lecture-to-Revision Suite - Print & PDF Export Stylesheet
+   ========================================================================== */
+
+@media print {
+  /* Reset colors for crisp physical printing or PDF generation */
+  *, *::before, *::after {
+    background: transparent !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    background: #FFFFFF !important;
+    color: #111827 !important;
+    padding: 0.5in;
+  }
+
+  /* Hide interactive controls and chrome */
+  .app-header,
+  .hero-intro,
+  .ingestion-card,
+  .action-cta-wrap,
+  .export-toolbar,
+  .tabs-nav-bar,
+  .quiz-mode-toggles,
+  .quiz-navigation-footer,
+  .settings-modal-overlay,
+  .toast-container,
+  .app-footer,
+  .term-master-checkbox,
+  .btn-mode-toggle,
+  .btn-retake-quiz,
+  .summary-action-btns {
+    display: none !important;
+  }
+
+  /* Ensure both notes and quiz are visible in printed output */
+  #notesPanel, #quizPanel, #outputSection {
+    display: block !important;
+  }
+
+  .app-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .output-header-banner {
+    border: none !important;
+    border-bottom: 2pt solid #000000 !important;
+    padding-bottom: 12pt !important;
+    margin-bottom: 18pt !important;
+  }
+
+  .output-title-group h2 {
+    font-size: 18pt !important;
+    font-weight: bold !important;
+  }
+
+  .meta-tag {
+    border: 1pt solid #4B5563 !important;
+    padding: 2pt 6pt !important;
+    font-size: 9pt !important;
+  }
+
+  /* Note cards layout for print */
+  .note-card {
+    border: 1pt solid #D1D5DB !important;
+    border-radius: 4pt !important;
+    padding: 12pt !important;
+    margin-bottom: 14pt !important;
+    page-break-inside: avoid;
+  }
+
+  .card-heading {
+    font-size: 13pt !important;
+    font-weight: bold !important;
+    border-bottom: 1pt solid #E5E7EB;
+    padding-bottom: 4pt;
+    margin-bottom: 8pt;
+  }
+
+  .terms-grid {
+    display: block !important;
+  }
+
+  .term-box {
+    border: 1pt solid #E5E7EB !important;
+    margin-bottom: 8pt !important;
+    padding: 8pt !important;
+    page-break-inside: avoid;
+  }
+
+  .term-name {
+    font-weight: bold !important;
+    font-size: 11pt !important;
+  }
+
+  .pitfall-item {
+    border: 1pt solid #E5E7EB !important;
+    display: block !important;
+    margin-bottom: 8pt !important;
+    padding: 8pt !important;
+  }
+
+  .pitfall-trap {
+    color: #991B1B !important;
+    font-weight: bold !important;
+    margin-bottom: 4pt !important;
+  }
+
+  .pitfall-fix {
+    color: #065F46 !important;
+  }
+
+  /* Quiz section print layout */
+  .quiz-sheet-item, .quiz-card {
+    border: 1pt solid #E5E7EB !important;
+    padding: 10pt !important;
+    margin-bottom: 12pt !important;
+    page-break-inside: avoid;
+  }
+
+  .quiz-option-btn {
+    border: 1pt solid #D1D5DB !important;
+    padding: 4pt 8pt !important;
+    margin-bottom: 4pt !important;
+  }
+
+  .quiz-explanation-box {
+    border: 1pt solid #9CA3AF !important;
+    padding: 6pt !important;
+    margin-top: 6pt !important;
+  }
+}

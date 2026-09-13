@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyPulse — AI Lecture to Condensed Revision & Practice Quiz</title>
+  <meta name="description" content="Eliminate student busywork: convert lecture PDFs, slides, and docs into condensed revision notes and a 5-question diagnostic practice quiz in seconds.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+
+  <!-- Optional PDF.js for client-side PDF text parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+
+  <!-- Client-side jsPDF for Direct PDF Generation (Local bundle + CDN fallback) -->
+  <script src="lib/jspdf.umd.min.js"></script>
+  <script>
+    if (!window.jspdf) {
+      const cdn = document.createElement('script');
+      cdn.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      document.head.appendChild(cdn);
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Subtle Interactive Particle / Network Canvas Background -->
+  <canvas id="particleNetworkCanvas" class="particle-network-canvas" aria-hidden="true"></canvas>
+
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="app-container nav-wrapper">
+      <a href="#" class="brand-logo" id="logoLink">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>StudyPulse</h1>
+        </div>
+        <span class="brand-badge">Student Flow</span>
+      </a>
+
+      <div class="header-actions">
+        <button class="btn-icon-nav" onclick="window.studyPulseApp.openSettings()" id="settingsBtn" title="Configure AI Settings">
+          <span>⚙️</span>
+          <span>AI Settings</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="app-container">
+    
+    <!-- Hero / Intro -->
+    <section class="hero-intro">
+      <div class="hero-pill">
+        <span>✨ Single Focused AI Flow</span>
+        <span>•</span>
+        <span>Zero Student Busywork</span>
+      </div>
+      <h2 class="hero-title">
+        Lecture Material <span class="gradient-text">→ Revision Notes + Quiz</span>
+      </h2>
+      <p class="hero-subtitle">
+        Drop in any lecture PDF, doc, or presentation to instantly extract high-yield revision notes and an interactive 5-question practice quiz tailored to your course.
+      </p>
+    </section>
+
+    <!-- 4-Step Interactive Workspace Flow Stepper -->
+    <nav class="flow-stepper-bar" aria-label="Student Workspace Flow">
+      <button type="button" class="stepper-step active" id="stepIndicator1" onclick="window.studyPulseApp.goToStep(1)">
+        <div class="step-circle">1</div>
+        <div class="step-label-group">
+          <span class="step-num">Step 1</span>
+          <span class="step-title">Upload PDF</span>
+        </div>
+      </button>
+      <div class="stepper-line" id="stepperLine1"></div>
+      <button type="button" class="stepper-step" id="stepIndicator2" onclick="window.studyPulseApp.goToStep(2)">
+        <div class="step-circle">2</div>
+        <div class="step-label-group">
+          <span class="step-num">Step 2</span>
+          <span class="step-title">Extract Content</span>
+        </div>
+      </button>
+      <div class="stepper-line" id="stepperLine2"></div>
+      <button type="button" class="stepper-step" id="stepIndicator3" onclick="window.studyPulseApp.goToStep(3)">
+        <div class="step-circle">3</div>
+        <div class="step-label-group">
+          <span class="step-num">Step 3</span>
+          <span class="step-title">Revision Notes</span>
+        </div>
+      </button>
+      <div class="stepper-line" id="stepperLine3"></div>
+      <button type="button" class="stepper-step" id="stepIndicator4" onclick="window.studyPulseApp.goToStep(4)">
+        <div class="step-circle">4</div>
+        <div class="step-label-group">
+          <span class="step-num">Step 4</span>
+          <span class="step-title">5-Question Quiz</span>
+        </div>
+      </button>
+    </nav>
+
+    <!-- Input Section: Drag & Drop Ingestion -->
+    <section class="ingestion-card" id="inputSection">
+      
+      <div class="dropzone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md" style="display:none">
+        <div class="dropzone-content">
+          <div class="dropzone-icon">📁</div>
+          <p class="dropzone-primary-text">
+            Drag & drop your lecture PDF here, or <span class="dropzone-highlight">browse computer</span>
+          </p>
+          <p class="dropzone-subtext">Supports lecture PDF slides, Word documents (.docx), text notes (.txt), and Markdown</p>
+          <div class="file-type-tags">
+            <span class="file-type-badge">.PDF</span>
+            <span class="file-type-badge">.DOCX</span>
+            <span class="file-type-badge">.TXT</span>
+            <span class="file-type-badge">.MD</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Metadata Status Bar -->
+      <div class="document-meta-bar">
+        <div class="doc-info-left">
+          <span class="doc-icon">📄</span>
+          <span class="doc-filename" id="fileNameBadge">No lecture file uploaded</span>
+        </div>
+        <div class="doc-stats-right">
+          <span class="stat-pill" id="pageCountBadge">0 pages</span>
+          <span class="stat-pill" id="wordCountBadge">0 words</span>
+          <span class="stat-pill" id="estTimeBadge">--</span>
+        </div>
+      </div>
+
+      <!-- Step 2: Extracted Content Inspector -->
+      <div class="extracted-content-panel" id="extractedContentPanel">
+        <div class="extracted-header">
+          <div class="extracted-header-title">
+            <span class="extracted-badge-icon">📑</span>
+            <h4>Step 2: Extracted Lecture Content</h4>
+            <span class="extracted-stats-badge" id="extractedStatsBadge">0 Pages • 0 Words</span>
+          </div>
+          <div class="extracted-actions">
+            <button type="button" class="btn-small-toggle" id="togglePageViewBtn" onclick="window.studyPulseApp.toggleExtractedView()">View by Slides/Pages</button>
+            <button type="button" class="btn-small-action" onclick="window.studyPulseApp.copyExtractedText()">Copy Raw Text</button>
+          </div>
+        </div>
+        <div class="extracted-body">
+          <div id="pageByPageView" class="page-by-page-container hidden"></div>
+          <textarea class="pasted-textarea" id="pastedText" placeholder="Extracted lecture content will appear here... you can also edit or paste notes directly."></textarea>
+        </div>
+      </div>
+
+      <!-- Course & Personalization Controls -->
+      <div class="personalization-grid">
+        <div class="control-group">
+          <label class="control-label" for="subjectSelect">
+            <span>🎯</span> Course Subject
+          </label>
+          <select id="subjectSelect" class="custom-select">
+            <option value="cs" selected>Computer Science & Tech</option>
+            <option value="med">Medicine & Biology</option>
+            <option value="econ">Economics & Business</option>
+            <option value="humanities">Humanities & History</option>
+            <option value="general">General Science / Other</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="styleSelect">
+            <span>🧠</span> Study Persona
+          </label>
+          <select id="styleSelect" class="custom-select">
+            <option value="exam_cram" selected>Exam Cram (High-Yield Bullets & Formulas)</option>
+            <option value="deep_concept">Concept Master (ELI5 & Analogies)</option>
+            <option value="quick_scan">Quick Scan (Executive Summary & Terms)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="levelSelect">
+            <span>🎓</span> Academic Level
+          </label>
+          <select id="levelSelect" class="custom-select">
+            <option value="intro">Introductory / High School</option>
+            <option value="undergrad" selected>Undergraduate</option>
+            <option value="grad">Graduate / Professional</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="action-cta-wrap">
+        <button class="btn-primary-generate" id="generateBtn">
+          <span>✨</span>
+          <span>Generate Revision Suite & 5-Question Quiz</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Processing / Progress Section -->
+    <section class="processing-card hidden" id="progressSection">
+      <div class="pulse-spinner"></div>
+      <h3 class="processing-title">Synthesizing Lecture Knowledge</h3>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width: 20%;"></div>
+      </div>
+      <div class="progress-status-row">
+        <span id="progressStageText">Analyzing lecture text & core concepts...</span>
+        <span id="progressPercentText">20%</span>
+      </div>
+    </section>
+
+    <!-- Output Section (Revision Notes + 5-Question Quiz) -->
+    <section class="output-section hidden" id="outputSection">
+      
+      <!-- Output Header Banner -->
+      <div class="output-header-banner">
+        <div class="output-title-group">
+          <h2 id="outputLectureTitle">Lecture Revision Suite</h2>
+          <div class="output-meta-tags" id="outputLectureMeta">
+            <!-- Dynamic tags populated by JS -->
+          </div>
+        </div>
+
+        <!-- Export Toolbar -->
+        <div class="export-toolbar">
+          <!-- PDF Export Dropdown -->
+          <div class="export-dropdown-wrap" id="pdfDropdownWrap">
+            <button class="btn-export btn-export-highlight" onclick="window.studyPulseApp.togglePdfMenu(event)" id="pdfMenuBtn" title="Download Print-Ready PDF">
+              <span>📄</span>
+              <span>Download PDF ▾</span>
+            </button>
+            <div class="export-dropdown-menu hidden" id="pdfDropdownMenu">
+              <button class="dropdown-item" onclick="window.studyPulseApp.downloadNotesPDF()">
+                <span class="item-icon">📝</span>
+                <span class="item-text">
+                  <strong>Revision Notes PDF</strong>
+                  <small>6 Structured Sections</small>
+                </span>
+              </button>
+              <button class="dropdown-item" onclick="window.studyPulseApp.downloadQuizPDF()">
+                <span class="item-icon">🎯</span>
+                <span class="item-text">
+                  <strong>Practice Quiz PDF</strong>
+                  <small>5 Questions + Answer Key</small>
+                </span>
+              </button>
+              <button class="dropdown-item" onclick="window.studyPulseApp.downloadCompletePackPDF()">
+                <span class="item-icon">📦</span>
+                <span class="item-text">
+                  <strong>Complete Study Pack PDF</strong>
+                  <small>Notes + Quiz combined</small>
+                </span>
+              </button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item" onclick="window.studyPulseApp.triggerPrint()">
+                <span class="item-icon">🖨️</span>
+                <span class="item-text">
+                  <strong>Browser Print / Save</strong>
+                  <small>System Print Dialog</small>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Multi-Channel Share Button -->
+          <button class="btn-export btn-export-share" onclick="window.studyPulseApp.openShareModal('notes')" title="Share Notes or Quiz via PDF, WhatsApp, Email, etc.">
+            <span>🔗</span>
+            <span>Share</span>
+          </button>
+
+          <button class="btn-export" onclick="window.studyPulseApp.exportMarkdown()" title="Download as clean Markdown (.md)">
+            <span>📥</span>
+            <span>Export .MD</span>
+          </button>
+          <button class="btn-export" onclick="window.studyPulseApp.exportAnkiJSON()" title="Export Anki-ready flashcards">
+            <span>📇</span>
+            <span>Anki Cards</span>
+          </button>
+          <button class="btn-export" onclick="window.studyPulseApp.copySummary()" title="Copy revision summary to clipboard">
+            <span>📋</span>
+            <span>Copy Text</span>
+          </button>
+          <button class="btn-export" onclick="window.studyPulseApp.goToStep(1)" title="Upload a new lecture PDF">
+            <span>🔄</span>
+            <span>New Lecture</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <nav class="tabs-nav-bar">
+        <button class="tab-btn active" id="notesTabBtn" onclick="window.studyPulseApp.switchTab('notes')">
+          <span>📝</span>
+          <span>Condensed Revision Notes</span>
+        </button>
+        <button class="tab-btn" id="quizTabBtn" onclick="window.studyPulseApp.switchTab('quiz')">
+          <span>🎯</span>
+          <span>5-Question Practice Quiz</span>
+          <span class="tab-badge" id="quizBadgeCount">0/5</span>
+        </button>
+      </nav>
+
+      <!-- Panel 1: Revision Notes Area -->
+      <div id="notesPanel">
+        <!-- Panel Quick Actions -->
+        <div class="panel-quick-actions">
+          <div class="quick-actions-info">
+            <span class="quick-title">📝 AI Revision Notes</span>
+            <span class="quick-sub">6 structured sections ready for study & review</span>
+          </div>
+          <div class="quick-actions-btns">
+            <button class="btn-quick-action" onclick="window.studyPulseApp.downloadNotesPDF()" title="Download Revision Notes as PDF">
+              <span>📄</span>
+              <span>Download Notes PDF</span>
+            </button>
+            <button class="btn-quick-action btn-quick-share" onclick="window.studyPulseApp.openShareModal('notes')" title="Share Revision Notes">
+              <span>🔗</span>
+              <span>Share Notes</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Audio Readout Controller -->
+        <div class="audio-readout-bar" id="audioReadoutBar">
+          <div class="audio-left">
+            <button class="btn-audio-play" id="audioPlayBtn" onclick="window.studyPulseApp.toggleSpeech()" title="Listen to revision summary with Web Speech">
+              <span id="audioIcon">🔊</span>
+              <span id="audioLabel">Listen to Revision Notes</span>
+            </button>
+            <div class="audio-waveform hidden" id="audioWaveform">
+              <span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="audio-right">
+            <label class="audio-rate-label" for="speechRateSelect">Voice Speed:</label>
+            <select id="speechRateSelect" class="audio-rate-select" onchange="window.studyPulseApp.setSpeechRate(this.value)">
+              <option value="1">1.0x</option>
+              <option value="1.2" selected>1.2x</option>
+              <option value="1.5">1.5x</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="notesContentArea">
+          <!-- Dynamic cards rendered by app.js -->
+        </div>
+      </div>
+
+      <!-- Panel 2: Interactive Practice Quiz Area -->
+      <div id="quizPanel" class="hidden">
+        <!-- Panel Quick Actions -->
+        <div class="panel-quick-actions">
+          <div class="quick-actions-info">
+            <span class="quick-title">🎯 5-Question Diagnostic Quiz</span>
+            <span class="quick-sub">Includes distractor rationales & lecture citations</span>
+          </div>
+          <div class="quick-actions-btns">
+            <button class="btn-quick-action" onclick="window.studyPulseApp.downloadQuizPDF()" title="Download Practice Quiz as PDF">
+              <span>🎯</span>
+              <span>Download Quiz PDF</span>
+            </button>
+            <button class="btn-quick-action btn-quick-share" onclick="window.studyPulseApp.openShareModal('quiz')" title="Share Practice Quiz">
+              <span>🔗</span>
+              <span>Share Quiz</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="quizMount">
+          <!-- QuizController mounts here -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- StudyPulse Multi-Channel Share Modal -->
+  <div class="settings-modal-overlay" id="shareModal" onclick="if(event.target === this) window.studyPulseApp.closeShareModal()">
+    <div class="settings-modal-content share-modal-content">
+      <div class="modal-header">
+        <h3>🔗 Share Study Material</h3>
+        <button class="btn-close-modal" onclick="window.studyPulseApp.closeShareModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="share-label">Choose What to Share:</label>
+        <div class="share-target-pills">
+          <button class="share-target-pill active" id="shareTargetNotes" onclick="window.studyPulseApp.setShareTarget('notes')">
+            <span>📝</span>
+            <span>Revision Notes</span>
+          </button>
+          <button class="share-target-pill" id="shareTargetQuiz" onclick="window.studyPulseApp.setShareTarget('quiz')">
+            <span>🎯</span>
+            <span>Practice Quiz</span>
+          </button>
+          <button class="share-target-pill" id="shareTargetPack" onclick="window.studyPulseApp.setShareTarget('pack')">
+            <span>📦</span>
+            <span>Complete Pack</span>
+          </button>
+        </div>
+
+        <div class="share-options-grid">
+          <!-- 1. Native Device Share -->
+          <button class="share-option-btn primary-share" onclick="window.studyPulseApp.executeShare('native')">
+            <span class="opt-icon">🚀</span>
+            <div class="opt-info">
+              <strong>Native Device Share (Apps & PDF)</strong>
+              <small>Send directly to AirDrop, WhatsApp, Slack, Messages, etc.</small>
+            </div>
+          </button>
+
+          <!-- 2. Direct PDF Download -->
+          <button class="share-option-btn" onclick="window.studyPulseApp.executeShare('pdf')">
+            <span class="opt-icon">📄</span>
+            <div class="opt-info">
+              <strong>Download PDF File</strong>
+              <small>Save printable PDF document immediately</small>
+            </div>
+          </button>
+
+          <!-- 3. Copy Summary Text -->
+          <button class="share-option-btn" onclick="window.studyPulseApp.executeShare('clipboard')">
+            <span class="opt-icon">📋</span>
+            <div class="opt-info">
+              <strong>Copy Formatted Text</strong>
+              <small>Ready to paste into Notion, Google Docs, or Chat</small>
+            </div>
+          </button>
+
+          <!-- 4. WhatsApp Share -->
+          <button class="share-option-btn" onclick="window.studyPulseApp.executeShare('whatsapp')">
+            <span class="opt-icon">💬</span>
+            <div class="opt-info">
+              <strong>Share via WhatsApp</strong>
+              <small>Message study pack to study group or classmates</small>
+            </div>
+          </button>
+
+          <!-- 5. Email Share -->
+          <button class="share-option-btn" onclick="window.studyPulseApp.executeShare('email')">
+            <span class="opt-icon">✉️</span>
+            <div class="opt-info">
+              <strong>Email Study Material</strong>
+              <small>Pre-fills email subject and formatted body</small>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="window.studyPulseApp.closeShareModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal (Optional Gemini API Key) -->
+  <div class="settings-modal-overlay" id="settingsModal" onclick="if(event.target === this) window.studyPulseApp.closeSettings()">
+    <div class="settings-modal-content">
+      <div class="modal-header">
+        <h3>⚡ AI Engine Settings</h3>
+        <button class="btn-close-modal" onclick="window.studyPulseApp.closeSettings()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>
+          By default, <strong>StudyPulse</strong> uses its built-in intelligent contextual synthesizer with zero setup required.
+        </p>
+        <p>
+          If you wish to run live generation using Google Gemini 2.5 Flash, paste your Gemini API key below:
+        </p>
+        <input type="password" id="apiKeyInput" class="api-key-input" placeholder="AIzaSy... (leave blank for built-in engine)">
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="window.studyPulseApp.closeSettings()">Cancel</button>
+        <button class="btn-primary" onclick="window.studyPulseApp.saveApiKey()">Save & Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="app-container">
+      <p>StudyPulse • Built to eliminate student busywork • Fast, focused & distraction-free</p>
+    </div>
+  </footer>
+
+  <!-- App Main Module Entrypoint -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
